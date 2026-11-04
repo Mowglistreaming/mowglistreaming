@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Mowgli streaming</title>
+<style>
+:root{--bg:#f2efe3;--panel:#fffdf6;--panel2:#ebe6d4;--text:#14231c;--mute:#5f7066;--acc:#d9480f;--onacc:#fff;--line:#d8d2bb;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#07100c;--panel:#0e1a15;--panel2:#172821;--text:#eef4ec;--mute:#8ea597;--acc:#ffa53a;--onacc:#1b1203;--line:#233a2f;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#07100c;--panel:#0e1a15;--panel2:#172821;--text:#eef4ec;--mute:#8ea597;--acc:#ffa53a;--onacc:#1b1203;--line:#233a2f;color-scheme:dark}
+*{box-sizing:border-box;margin:0}
+html,body{height:100%}
+body{background:var(--bg);color:var(--text);font-family:"Segoe UI",system-ui,-apple-system,Helvetica,Arial,sans-serif;display:grid;grid-template-columns:260px 1fr;grid-template-rows:1fr 88px;gap:8px;padding:8px;overflow:hidden}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+button:focus-visible,input:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+aside{background:var(--panel);border-radius:12px;padding:20px 14px;display:flex;flex-direction:column;gap:6px;overflow:auto}
+.logo{display:flex;align-items:center;gap:10px;font-weight:800;font-size:22px;padding:0 10px 14px;letter-spacing:-.5px}
+.logo i{width:28px;height:28px;border-radius:50%;background:radial-gradient(circle,var(--bg) 0 14%,var(--acc) 15% 30%,var(--text) 31% 36%,var(--acc) 37% 52%,var(--text) 53% 58%,var(--acc) 59%)}
+.nav{display:flex;gap:12px;align-items:center;padding:10px;border-radius:8px;color:var(--mute);font-weight:600;width:100%;text-align:left}
+.nav:hover,.nav.on{color:var(--text);background:var(--panel2)}
+.lib{margin-top:14px;padding:10px;color:var(--mute);font-weight:700;font-size:14px}
+.pl{display:flex;gap:10px;align-items:center;padding:8px 10px;border-radius:8px;width:100%;text-align:left}
+.pl:hover{background:var(--panel2)}
+.pl .c{width:42px;height:42px;border-radius:6px;flex:none}
+.pl small{display:block;color:var(--mute)}
+main{background:var(--panel);border-radius:12px;overflow:auto;position:relative}
+header{position:sticky;top:0;z-index:5;display:flex;gap:12px;align-items:center;padding:14px 24px;background:color-mix(in srgb,var(--panel) 88%,transparent);backdrop-filter:blur(10px)}
+.search{flex:1;max-width:420px;background:var(--panel2);border:1px solid var(--line);border-radius:999px;padding:11px 18px;color:var(--text);font:inherit}
+.search::placeholder{color:var(--mute)}
+.chip{padding:8px 16px;border-radius:999px;background:var(--panel2);font-weight:600;font-size:14px}
+.chip.on{background:var(--text);color:var(--bg)}
+.wrap{padding:6px 24px 40px}
+h2{font-size:24px;margin:22px 0 14px;letter-spacing:-.4px}
+.hero{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px}
+.quick{display:flex;align-items:center;gap:12px;background:var(--panel2);border-radius:8px;overflow:hidden;font-weight:700;text-align:left;width:100%}
+.quick:hover{background:var(--line)}
+.quick .c{width:56px;height:56px;flex:none}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(168px,1fr));gap:16px}
+.card{padding:12px;border-radius:10px;text-align:left;background:transparent}
+.card:hover{background:var(--panel2)}
+.card .c{aspect-ratio:1;border-radius:8px;margin-bottom:12px;width:100%}
+.card b{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.card span{color:var(--mute);font-size:14px}
+.row{display:grid;grid-template-columns:36px 1fr 1fr 60px;gap:12px;align-items:center;padding:8px 12px;border-radius:8px;width:100%;text-align:left}
+.row:hover{background:var(--panel2)}
+.row.now{color:var(--acc)}
+.row .t{display:flex;gap:12px;align-items:center;min-width:0}
+.row .t .c{width:40px;height:40px;border-radius:5px;flex:none}
+.row small{color:var(--mute)}
+.row>*:nth-child(3),.row>*:nth-child(4){color:var(--mute);font-size:14px}
+.c{background:var(--g)}
+footer{grid-column:1/-1;background:var(--panel);border-radius:12px;display:grid;grid-template-columns:1fr 2fr 1fr;align-items:center;gap:16px;padding:0 18px}
+.np{display:flex;gap:12px;align-items:center;min-width:0}
+.np .c{width:56px;height:56px;border-radius:6px;flex:none}
+.np b,.np small{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.np small{color:var(--mute)}
+.ctl{display:flex;flex-direction:column;align-items:center;gap:6px}
+.btns{display:flex;gap:18px;align-items:center}
+.btns button{color:var(--mute);font-size:18px;line-height:1}
+.btns button:hover,.btns button.on{color:var(--text)}
+.btns button.on{color:var(--acc)}
+.play{width:38px;height:38px;border-radius:50%;background:var(--text);color:var(--bg)!important;display:grid;place-items:center;font-size:15px!important}
+.bar{display:flex;gap:10px;align-items:center;width:100%;max-width:560px;font-size:12px;color:var(--mute)}
+input[type=range]{flex:1;accent-color:var(--acc);height:4px;cursor:pointer}
+.vol{display:flex;gap:8px;justify-content:flex-end;align-items:center}
+.vol input{max-width:110px}
+@media (max-width:760px){
+body{grid-template-columns:1fr;grid-template-rows:1fr auto;gap:6px;padding:6px}
+aside{display:none}
+footer{grid-template-columns:1fr auto;padding:10px 14px;gap:8px}
+.ctl{grid-column:1/-1;order:3}.vol{display:none}
+.row{grid-template-columns:30px 1fr 50px}.row>*:nth-child(3){display:none}
+.wrap{padding:6px 14px 30px}header{padding:12px 14px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+.drop{border:2px dashed var(--line);border-radius:16px;padding:56px 24px;text-align:center;margin-top:18px}
+.drop.over{border-color:var(--acc);background:var(--panel2)}
+.drop h3{font-size:26px;letter-spacing:-.5px;margin-bottom:8px}.drop p{color:var(--mute);margin-bottom:20px}
+.btn{background:var(--acc);color:var(--onacc);font-weight:700;padding:12px 24px;border-radius:999px}
+.btn.s{background:var(--panel2);color:var(--text);width:100%;margin:6px 0 4px}
+.del{color:var(--mute);padding:4px 8px;border-radius:6px;opacity:.0}.row:hover .del,.row:focus-within .del{opacity:1}.del:hover{color:var(--acc)}
+.row{grid-template-columns:36px 1fr 1fr 60px 72px}
+.row[data-p]{cursor:pointer}
+.avatar{margin-left:auto;width:36px;height:36px;border-radius:50%;font-weight:800;color:#fff;display:grid;place-items:center;flex:none}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.55);display:grid;place-items:center;z-index:50;padding:16px}.modal[hidden]{display:none}
+.box{background:var(--panel);border-radius:16px;padding:24px;width:min(400px,100%);display:grid;gap:14px;max-height:92vh;overflow:auto}
+.box h3{font-size:22px;letter-spacing:-.4px}.box label{display:grid;gap:6px;font-weight:600;font-size:14px;color:var(--mute)}
+.box input[type=text],.box select{background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:10px 12px;color:var(--text);font:inherit}
+.stats{display:flex;gap:10px}.stats div{flex:1;background:var(--panel2);border-radius:10px;padding:10px;text-align:center}.stats b{display:block;font-size:20px}.stats span{color:var(--mute);font-size:13px}
+.keys{font-size:13px;color:var(--mute);line-height:1.7}.keys kbd{background:var(--panel2);border:1px solid var(--line);border-radius:4px;padding:1px 6px;font:inherit;color:var(--text)}
+.danger{color:var(--acc);font-weight:600;text-align:left}
+.acts{display:flex;justify-content:flex-end}
+.sm{padding:8px 16px;border-radius:999px;background:var(--panel2);font-weight:600;font-size:14px}.sm:hover{background:var(--line)}
+.pbanner{height:120px;border-radius:12px}
+.top{border-radius:14px;min-height:140px;display:flex;align-items:flex-end;gap:14px;padding:16px;margin:6px 0 16px}
+.top .av{width:76px;height:76px;border-radius:50%;border:3px solid var(--panel);flex:none;display:grid;place-items:center;font-size:30px;font-weight:800;color:#fff}
+.top h2{margin:0;color:#fff;text-shadow:0 1px 8px rgba(0,0,0,.55)}
+.phero{display:flex;gap:20px;align-items:flex-end;margin:18px 0 12px;flex-wrap:wrap}.phero .c{width:160px;height:160px;border-radius:10px;flex:none}
+.phero input[type=text]{font:inherit;font-size:32px;font-weight:800;background:transparent;border:0;border-bottom:2px solid transparent;color:var(--text);width:100%;letter-spacing:-.6px;padding:2px 0}.phero input[type=text]:hover,.phero input[type=text]:focus{border-bottom-color:var(--line)}
+.chk{display:flex;gap:8px;align-items:center;font-weight:500;color:var(--text)}
+.addbox{display:flex;gap:8px;margin:8px 0 6px;max-width:560px}
+.addbox input{flex:1;min-width:0;background:var(--panel2);border:1px solid var(--line);border-radius:999px;padding:11px 18px;color:var(--text);font:inherit}
+.addbox input::placeholder{color:var(--mute)}
+#fs{position:fixed;left:8px;right:8px;top:8px;bottom:104px;border-radius:12px;z-index:30;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:20px;overflow:hidden;background:#000;color:#fff;isolation:isolate}
+#fs[hidden]{display:none}
+#fs .bg{position:absolute;inset:0;z-index:-1;background:linear-gradient(180deg,var(--fc,#143d2e) 0%,#000 140%)}
+#fsc{width:min(52vh,72vw,440px);aspect-ratio:1;border-radius:14px;box-shadow:0 24px 60px rgba(0,0,0,.5);flex:none;background:var(--g)}
+#fs h2{margin:0;font-size:clamp(20px,3vw,30px);text-align:center;letter-spacing:-.4px}
+#fs p{opacity:.8;margin:-8px 0 0;text-align:center}
+#fs .tb{position:absolute;top:12px;right:12px;display:flex;gap:8px}
+#fs .tb button{background:rgba(0,0,0,.38);color:#fff;border-radius:999px;padding:8px 14px;font-weight:600;font-size:14px}
+#fs .tb button:hover{background:rgba(0,0,0,.6)}
+#fsback{position:absolute;top:12px;left:12px;width:42px;height:42px;border-radius:50%;background:rgba(0,0,0,.38);color:#fff;font-size:22px;line-height:1;display:grid;place-items:center}
+#fsback:hover{background:rgba(0,0,0,.6)}
+#ap{position:fixed;left:8px;right:8px;top:8px;bottom:104px;border-radius:12px;z-index:28;background:var(--panel);overflow:auto;padding:20px 28px 40px}
+#ap[hidden]{display:none}
+#ap .top2{display:flex;align-items:center;gap:14px;margin-bottom:6px}
+#apback{width:42px;height:42px;border-radius:50%;background:var(--panel2);font-size:22px;line-height:1;display:grid;place-items:center;flex:none}
+#apback:hover{background:var(--line)}
+.apbar{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0 6px}
+.apbar input{flex:1;min-width:220px;background:var(--panel2);border:1px solid var(--line);border-radius:999px;padding:13px 20px;color:var(--text);font:inherit;font-size:16px}
+.apbar input::placeholder{color:var(--mute)}
+.apbar select{background:var(--panel2);border:1px solid var(--line);border-radius:999px;padding:12px 16px;color:var(--text);font:inherit;max-width:100%}
+.apm{color:var(--mute);font-size:14px;min-height:20px;margin-bottom:4px}
+.card .sm{margin-top:8px}
+.sm:disabled{opacity:.6;cursor:default}
+body{background:radial-gradient(900px 520px at 6% -8%,color-mix(in srgb,var(--acc) 16%,transparent),transparent 65%),radial-gradient(700px 480px at 100% 110%,color-mix(in srgb,#2fa36b 14%,transparent),transparent 60%),var(--bg)}
+aside,main,footer{border:1px solid var(--line)}
+.nav.on{box-shadow:inset 3px 0 0 var(--acc)}
+.chip.on{background:var(--acc);color:var(--onacc)}
+.row.now,.row.now b{color:var(--acc)}
+.play{background:var(--acc);color:var(--onacc)!important}
+.btns button.on{color:var(--acc)}
+.card:hover,.quick:hover{box-shadow:0 8px 22px rgba(0,0,0,.2)}
+.logo{color:var(--text)}
+@media (max-width:760px){header{flex-wrap:wrap}#addpg{padding:10px 16px;font-size:14px}#ap{padding:16px}}
+@media (max-width:760px){.row{grid-template-columns:30px 1fr 50px 68px}.del{opacity:1}}
+</style>
+</head>
+<body>
+<input type="file" id="file" accept="audio/*" multiple hidden>
+<input type="file" id="imgf" accept="image/*" hidden>
+<div class="modal" id="cm" hidden style="z-index:60"><div class="box" role="dialog" aria-label="Valider l’image">
+  <h3>Utiliser cette image ?</h3>
+  <div id="cprev" style="height:220px;border-radius:12px"></div>
+  <div style="display:flex;gap:8px"><button class="btn" id="cok" style="flex:1">Accepter</button><button class="sm" id="cno">Annuler</button></div>
+</div></div>
+<div class="modal" id="tm" hidden><div class="box" role="dialog" aria-label="Modifier le titre">
+  <h3 id="th">Modifier le titre</h3><div class="keys" id="tcount" hidden></div>
+  <div style="display:flex;gap:14px;align-items:center"><div class="c" id="tcov" style="width:96px;height:96px;border-radius:8px;flex:none"></div><div style="display:grid;gap:8px"><button class="sm" id="tpick">Choisir une image</button><button class="sm" id="tnoimg">Retirer l’image</button></div></div>
+  <label>Titre<input type="text" id="tt" maxlength="80"></label>
+  <label>Artiste<input type="text" id="ta" maxlength="60"></label>
+  <div class="keys" style="font-weight:600">Playlists</div><div id="tpls" style="display:grid;gap:6px"></div>
+  <div style="display:flex;gap:8px"><button class="btn" id="tsave" style="flex:1">Accepter</button><button class="sm" id="tcancel">Annuler</button></div>
+</div></div>
+<div class="modal" id="pm" hidden><div class="box" role="dialog" aria-label="Profil">
+  <h3>Mon profil</h3>
+  <div class="pbanner" id="pbn"></div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="sm" id="pav">Changer la photo</button><button class="sm" id="pbp">Changer la bannière</button><button class="sm" id="pclr">Retirer les images</button></div>
+  <label>Nom<input type="text" id="pn" maxlength="24"></label>
+  <label>Couleur de l’avatar<input type="range" id="ph" min="0" max="359"></label>
+  <label>Thème<select id="pt"><option value="auto">Automatique</option><option value="dark">Sombre</option><option value="light">Clair</option></select></label>
+  <div class="stats"><div><b id="s1">0</b><span>titres</span></div><div><b id="s2">0</b><span>artistes</span></div><div><b id="s3">0</b><span>likés</span></div></div>
+  <div class="keys"><kbd>Espace</kbd> lecture/pause · <kbd>Ctrl</kbd>+<kbd>→</kbd>/<kbd>←</kbd> suivant/précédent · <kbd>Ctrl</kbd>+<kbd>↑</kbd>/<kbd>↓</kbd> volume · <kbd>Shift</kbd>+<kbd>→</kbd>/<kbd>←</kbd> avancer/reculer de 10 s · <kbd>Shift</kbd>+<kbd>S</kbd> aléatoire · <kbd>Shift</kbd>+<kbd>R</kbd> répéter · <kbd>Ctrl</kbd>+<kbd>L</kbd> recherche</div>
+  <button class="danger" id="pdel">Supprimer toute ma musique</button>
+  <button class="btn" id="pclose">Enregistrer</button>
+</div></div>
+<aside>
+  <div class="logo"><i></i>Mowgli</div>
+  <button class="nav on" data-v="home">⌂ Accueil</button>
+  <button class="nav" data-v="all">♫ Ma musique</button>
+  <button class="nav" data-v="search">＋ Ajouter des musiques</button>
+  <button class="btn s" id="add">＋ Ajouter de la musique</button>
+  <div class="lib">Playlists</div>
+  <button class="sm" id="newpl" style="margin:0 10px 8px">＋ Nouvelle playlist</button>
+  <div id="mypl"></div>
+  <div class="lib">Par artiste</div>
+  <div id="pls"></div>
+</aside>
+<main id="main">
+  <header>
+    <button class="btn" id="addpg">＋ Ajouter des musiques</button><input id="q" type="search" hidden>
+    <button class="chip on" data-f="all">Tout</button>
+    <button class="chip" data-f="liked">Titres likés</button>
+    <button class="avatar" id="me" aria-label="Ouvrir mon profil"></button>
+  </header>
+  <div class="wrap" id="view"></div>
+</main>
+<footer>
+  <div class="np"><div class="c" id="npc"></div><div><b id="npt">Aucun titre</b><small id="npa">Ajoute ta musique pour commencer</small></div><button id="npl" aria-label="Ajouter aux titres likés" style="font-size:20px;color:var(--mute)">♡</button></div>
+  <div class="ctl">
+    <div class="btns">
+      <button id="shuf" aria-label="Lecture aléatoire">⤨</button>
+      <button id="prev" aria-label="Précédent">⏮</button>
+      <button id="pp" class="play" aria-label="Lecture">▶</button>
+      <button id="next" aria-label="Suivant">⏭</button>
+      <button id="rep" aria-label="Répéter">↻</button>
+    </div>
+    <div class="bar"><span id="cur">0:00</span><input type="range" id="seek" min="0" max="1000" value="0" aria-label="Position"><span id="dur">0:00</span></div>
+  </div>
+  <div class="vol">🔈<input type="range" id="vol" min="0" max="100" value="70" aria-label="Volume"></div>
+</footer>
+<script>
+const $=id=>document.getElementById(id);
+const fmt=s=>isFinite(s)?Math.floor(s/60)+":"+String(Math.floor(s%60)).padStart(2,"0"):"0:00";
+const esc=t=>String(t).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const grad=n=>{let h=0;for(const c of n)h=(h*31+c.charCodeAt(0))%360;return`linear-gradient(135deg,hsl(${h} 75% 58%),hsl(${(h+55)%360} 70% 38%))`};
+let T=[],upNew=[],cur=-1,playing=false,shuf=false,rep=false,view="home",filt="all",queue=[],list=[],liked=new Set(),urls={};
+const au=new Audio();
+/* stockage local (IndexedDB) */
+let db;
+const idb=new Promise(r=>{try{const q=indexedDB.open("sillon",1);q.onupgradeneeded=()=>q.result.createObjectStore("t",{keyPath:"id"});q.onsuccess=()=>{db=q.result;r()};q.onerror=()=>r()}catch(e){r()}});
+const store=(m,f)=>new Promise(r=>{try{const t=db.transaction("t",m),o=t.objectStore("t"),x=f(o);t.oncomplete=()=>r(x&&x.result);t.onerror=()=>r()}catch(e){r()}});
+async function load(){await idb;const a=await store("readonly",o=>o.getAll());T=(a||[]).sort((x,y)=>x.at-y.at);try{liked=new Set(JSON.parse(localStorage.getItem("sl")||"[]"))}catch(e){}render()}
+const saveL=()=>{try{localStorage.setItem("sl",JSON.stringify([...liked]))}catch(e){}};
+const url=t=>urls[t.id]||(urls[t.id]=URL.createObjectURL(t.blob));
+function parse(n){n=n.replace(/\.[^.]+$/,"").replace(/_/g," ").trim();const p=n.split(" - ");return p.length>1?{artist:p[0].trim(),title:p.slice(1).join(" - ").trim()}:{artist:"Artiste inconnu",title:n}}
+function dur(b){return new Promise(r=>{const a=new Audio(),u=URL.createObjectURL(b);a.preload="metadata";a.onloadedmetadata=()=>{r(a.duration);URL.revokeObjectURL(u)};a.onerror=()=>r(0);a.src=u})}
+async function addFiles(fs){const ok=[...fs].filter(f=>f.type.startsWith("audio/")||/\.(mp3|m4a|wav|ogg|flac|aac)$/i.test(f.name));if(!ok.length)return;
+for(const f of ok){const m=parse(f.name),t={id:Date.now()+"-"+Math.random().toString(36).slice(2,7),...m,d:await dur(f),blob:f,at:Date.now()};T.push(t);upNew.push(t.id);await idb;await store("readwrite",o=>o.put(t))}render();startUp()}
+async function del(id){const i=T.findIndex(t=>t.id===id);if(i<0)return;const was=i===cur;T.splice(i,1);liked.delete(id);saveL();await store("readwrite",o=>o.delete(id));if(was){au.pause();playing=false;cur=-1;$("npt").textContent="Aucun titre";$("npa").textContent="Choisis un titre dans ta bibliothèque";ui()}else if(cur>i)cur--;render()}
+/* rendu */
+const gOf=t=>t.img?`url(${t.img}) center/cover`:grad(t.title+t.artist);const cov=t=>`style="--g:${gOf(t)}"`;
+const idx=id=>T.findIndex(t=>t.id===id);
+function row(t,n){const on=cur>=0&&T[cur].id===t.id;return`<div class="row${on?" now":""}" data-p="${t.id}" tabindex="0"><span>${on&&playing?"♪":n}</span><span class="t"><span class="c" ${cov(t)}></span><span><b>${esc(t.title)}</b><br><small>${esc(t.artist)}</small></span></span><span>${liked.has(t.id)?"♥ Liké":""}</span><span>${fmt(t.d)}</span><span class="acts"><button class="del" data-ed="${t.id}" aria-label="Modifier ${esc(t.title)}" title="Modifier (image, nom, playlists)">✎</button><button class="del" data-del="${t.id}" aria-label="Supprimer ${esc(t.title)}" title="Supprimer de la bibliothèque">✕</button></span></div>`}
+function card(t){return`<button class="card" data-p="${t.id}"><div class="c" ${cov(t)}></div><b>${esc(t.title)}</b><span>${esc(t.artist)}</span></button>`}
+const artists=()=>[...new Set(T.map(t=>t.artist))];
+function render(){
+const q=$("q").value.trim().toLowerCase(),V=$("view");
+const ids=T.filter(t=>(filt==="all"||liked.has(t.id))&&(!q||(t.title+t.artist).toLowerCase().includes(q)));
+if(!T.length){V.innerHTML=`<div class="drop" id="dz"><h3>Ta bibliothèque est vide</h3><p>Glisse tes fichiers audio ici (MP3, M4A, WAV, OGG, FLAC).<br>Nomme-les « Artiste - Titre » pour que Sillon les classe tout seul.</p><button class="btn" id="add2">Choisir des fichiers</button></div>`}
+else if(view==="home"&&!q&&filt==="all"){
+V.innerHTML=`<div class="top" style="background:${bnCss()}"><div class="av" style="background:${avBg()}">${P.avatar?"":esc(P.name[0].toUpperCase())}</div><h2>Bonsoir ${esc(P.name)}</h2></div><div class="hero">${artists().slice(0,6).map(a=>`<button class="quick" data-l="${esc(a)}"><span class="c" style="--g:${grad(a)}"></span>${esc(a)}</button>`).join("")}</div><h2>Playlists</h2><div class="grid">${PLs.map(p=>`<button class="card" data-pl="${p.id}"><div class="c" style="--g:${plG(p)}"></div><b>${esc(p.name)}</b><span>${p.ids.length} titre(s)</span></button>`).join("")}<button class="card" id="newpl2"><div class="c" style="--g:var(--panel2);display:grid;place-items:center;font-size:42px;color:var(--mute)">＋</div><b>Nouvelle playlist</b><span>Crée-la ici</span></button></div><h2>Ajoutés récemment</h2><div class="grid">${[...T].reverse().slice(0,12).map(card).join("")}</div>${liked.size?`<h2>Tes titres likés</h2><div class="grid">${T.filter(t=>liked.has(t.id)).map(card).join("")}</div>`:""}`;list=T.map(t=>t.id)}
+else{V.innerHTML=`<h2>${q?"Résultats pour « "+esc($("q").value.trim())+" »":filt==="liked"?"Titres likés":view.startsWith("a:")?esc(view.slice(2)):"Ma musique"}</h2>`+(ids.length?ids.map((t,n)=>row(t,n+1)).join(""):"<p style='color:var(--mute)'>Aucun titre trouvé. Essaie un autre mot ou retire le filtre.</p>");list=ids.map(t=>t.id)}
+$("pls").innerHTML=artists().map(a=>`<button class="pl" data-l="${esc(a)}"><span class="c" style="--g:${grad(a)}"></span><span><b>${esc(a)}</b><small>${T.filter(t=>t.artist===a).length} titre(s)</small></span></button>`).join("")||"<p style='padding:0 10px;color:var(--mute);font-size:14px'>Aucun artiste pour l’instant</p>";
+}
+function info(){const t=T[cur];$("npt").textContent=t.title;$("npa").textContent=t.artist;$("npc").style.setProperty("--g",gOf(t));$("npc").className="c";$("dur").textContent=fmt(t.d);$("npl").textContent=liked.has(t.id)?"♥":"♡";$("npl").style.color=liked.has(t.id)?"var(--acc)":"var(--mute)";document.title=t.title+" · "+t.artist}
+function ui(){$("pp").textContent=playing?"⏸":"▶";$("pp").setAttribute("aria-label",playing?"Pause":"Lecture")}
+function play(id,q){const i=idx(id);if(i<0)return;if(q)queue=q;cur=i;au.src=url(T[i]);au.play().catch(()=>{});playing=true;info();ui();render()}
+function step(d){if(cur<0||!queue.length)return;const k=queue.indexOf(T[cur].id);play(shuf?queue[Math.floor(Math.random()*queue.length)]:queue[(k+d+queue.length)%queue.length])}
+au.ontimeupdate=()=>{if(au.duration){$("seek").value=au.currentTime/au.duration*1000;$("cur").textContent=fmt(au.currentTime);$("dur").textContent=fmt(au.duration)}};
+au.onended=()=>rep?play(T[cur].id):step(1);
+/* événements */
+document.addEventListener("click",e=>{
+const d=e.target.closest("[data-del]");if(d){del(d.dataset.del);return}
+const rm=e.target.closest("[data-rm]");if(rm){const[pid,tid]=rm.dataset.rm.split("|");const p=PLs.find(x=>x.id===pid);if(p){p.ids=p.ids.filter(i=>i!==tid);saveP();render()}return}
+const ed=e.target.closest("[data-ed]");if(ed){openT(ed.dataset.ed);return}
+const pl=e.target.closest("[data-pl]");if(pl){view="p:"+pl.dataset.pl;filt="all";render();return}
+if(e.target.closest("#newpl,#newpl2")){const p={id:"p"+Date.now(),name:"Ma playlist n°"+(PLs.length+1),ids:[]};PLs.push(p);saveP();view="p:"+p.id;render();const i=$("pln");if(i)i.select();return}
+if(e.target.closest("#plplay")){const p=PLs.find(x=>x.id===view.slice(2));if(p){const ids=p.ids.filter(i=>idx(i)>=0);if(ids.length)play(ids[0],ids)}return}
+if(e.target.closest("#plimg")){pickImg("pl:"+view.slice(2));return}
+const pd=e.target.closest("#pldel");if(pd){if(pd.dataset.sure){PLs=PLs.filter(x=>x.id!==view.slice(2));saveP();view="home";render()}else{pd.dataset.sure=1;pd.textContent="Confirmer la suppression"}return}
+const p=e.target.closest("[data-p]");if(p){play(p.dataset.p,list.length?list:T.map(t=>t.id));return}
+const l=e.target.closest("[data-l]");if(l){view="a:"+l.dataset.l;filt="all";const ids=T.filter(t=>t.artist===l.dataset.l);$("view").innerHTML=`<h2>${esc(l.dataset.l)}</h2>`+ids.map((t,n)=>row(t,n+1)).join("");list=ids.map(t=>t.id);play(list[0],list);return}
+if(e.target.closest("#add,#add2")){$("file").click();return}
+const n=e.target.closest(".nav");if(n){document.querySelectorAll(".nav").forEach(x=>x.classList.toggle("on",x===n));view=n.dataset.v;if(view==="search"){view="home";document.querySelectorAll(".nav").forEach(x=>x.classList.toggle("on",x.dataset.v==="home"));openAp();return}render()}
+const c=e.target.closest(".chip");if(c){filt=c.dataset.f;document.querySelectorAll(".chip").forEach(x=>x.classList.toggle("on",x===c));if(filt==="liked")view="all";render()}});
+document.addEventListener("keydown",e=>{if(e.key==="Enter"&&e.target.matches(".row[data-p]"))play(e.target.dataset.p,list)});
+$("file").onchange=e=>{addFiles(e.target.files);e.target.value=""};
+["dragover","dragenter"].forEach(v=>addEventListener(v,e=>{e.preventDefault();$("dz")&&$("dz").classList.add("over")}));
+addEventListener("dragleave",()=>$("dz")&&$("dz").classList.remove("over"));
+addEventListener("drop",e=>{e.preventDefault();addFiles(e.dataTransfer.files)});
+$("pp").onclick=()=>{if(cur<0){if(T.length)play(T[0].id,T.map(t=>t.id));else $("file").click();return}playing=!playing;playing?au.play():au.pause();ui();render()};
+$("next").onclick=()=>step(1);$("prev").onclick=()=>au.currentTime>5?(au.currentTime=0):step(-1);
+$("shuf").onclick=e=>{shuf=!shuf;e.currentTarget.classList.toggle("on",shuf)};
+$("rep").onclick=e=>{rep=!rep;e.currentTarget.classList.toggle("on",rep)};
+$("seek").oninput=e=>{if(au.duration)au.currentTime=e.target.value/1000*au.duration};
+$("vol").oninput=e=>{au.volume=e.target.value/100};au.volume=.7;
+$("npl").onclick=()=>{if(cur<0)return;const id=T[cur].id;liked.has(id)?liked.delete(id):liked.add(id);saveL();info();render()};
+$("q").oninput=()=>{if($("q").value&&view==="home")view="search";render()};
+/* profil */
+let P={name:"Moi",hue:340,theme:"auto"};try{P={...P,...JSON.parse(localStorage.getItem("sp")||"{}")}}catch(e){}
+function applyP(){const n=(P.name||"Moi").trim()||"Moi";P.name=n;$("me").textContent=P.avatar?"":n[0].toUpperCase();$("me").style.background=avBg();if($("pbn"))$("pbn").style.background=bnCss();P.theme==="auto"?document.documentElement.removeAttribute("data-theme"):document.documentElement.setAttribute("data-theme",P.theme);try{localStorage.setItem("sp",JSON.stringify(P))}catch(e){}}
+function openP(){$("pn").value=P.name;$("ph").value=P.hue;$("pt").value=P.theme;$("s1").textContent=T.length;$("s2").textContent=artists().length;$("s3").textContent=liked.size;$("pm").hidden=false;$("pn").focus()}
+function closeP(){P.name=$("pn").value;P.hue=+$("ph").value;P.theme=$("pt").value;applyP();$("pm").hidden=true;render()}
+$("me").onclick=openP;$("pclose").onclick=closeP;$("pm").onclick=e=>{if(e.target.id==="pm")closeP()};
+$("ph").oninput=()=>{P.hue=+$("ph").value;applyP()};
+$("pt").onchange=()=>{P.theme=$("pt").value;applyP()};
+$("pdel").onclick=async()=>{if(!$("pdel").dataset.sure){$("pdel").dataset.sure=1;$("pdel").textContent="Confirmer : tout supprimer (définitif)";return}au.pause();playing=false;cur=-1;T=[];liked=new Set();saveL();await store("readwrite",o=>o.clear());ui();$("npt").textContent="Aucun titre";$("npa").textContent="Ajoute ta musique pour commencer";$("pm").hidden=true;render()};
+/* raccourcis clavier */
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("pm").hidden){closeP();return}
+const typing=e.target.matches("input[type=text],input[type=search],select");const m=e.ctrlKey||e.metaKey;
+if(e.code==="Space"&&!typing&&!e.target.matches("button")){e.preventDefault();$("pp").click();return}
+if(m&&e.key==="l"){e.preventDefault();openAp();return}
+if(m&&e.key==="ArrowRight"){e.preventDefault();step(1)}else if(m&&e.key==="ArrowLeft"){e.preventDefault();step(-1)}
+else if(m&&(e.key==="ArrowUp"||e.key==="ArrowDown")){e.preventDefault();const v=Math.min(100,Math.max(0,+$("vol").value+(e.key==="ArrowUp"?10:-10)));$("vol").value=v;au.volume=v/100}
+else if(e.shiftKey&&!typing&&e.key==="ArrowRight"&&au.duration){e.preventDefault();au.currentTime=Math.min(au.duration,au.currentTime+10)}
+else if(e.shiftKey&&!typing&&e.key==="ArrowLeft"){e.preventDefault();au.currentTime=Math.max(0,au.currentTime-10)}
+else if(e.shiftKey&&!typing&&e.key==="S")$("shuf").click();else if(e.shiftKey&&!typing&&e.key==="R")$("rep").click()});
+/* images, playlists, édition des titres */
+function avBg(){return P.avatar?`url(${P.avatar}) center/cover`:`hsl(${P.hue} 70% 45%)`}
+function bnCss(){return P.banner?`url(${P.banner}) center/cover`:`linear-gradient(120deg,#1f6b4e,#0e2e24 55%,#b8470f)`}
+function img(f,w,h){return new Promise(r=>{const u=URL.createObjectURL(f),i=new Image();i.onload=()=>{const c=document.createElement("canvas");c.width=w;c.height=h;const x=c.getContext("2d"),s=Math.max(w/i.width,h/i.height),dw=i.width*s,dh=i.height*s;x.drawImage(i,(w-dw)/2,(h-dh)/2,dw,dh);URL.revokeObjectURL(u);const d=c.toDataURL("image/jpeg",.8);askImg(d).then(ok=>r(ok?d:null))};i.onerror=()=>r(null);i.src=u})}
+let tgt=null,tId=null,tImg;
+function pickImg(t){tgt=t;$("imgf").click()}
+$("imgf").onchange=async e=>{const f=e.target.files[0];e.target.value="";if(!f||!tgt)return;
+if(tgt==="avatar"){const d=await img(f,160,160);if(d){P.avatar=d;applyP()}}
+else if(tgt==="banner"){const d=await img(f,900,260);if(d){P.banner=d;applyP()}}
+else if(tgt==="track"){const d=await img(f,320,320);if(d){tImg=d;showT()}}
+else if(tgt.startsWith("pl:")){const p=PLs.find(x=>x.id===tgt.slice(3)),d=await img(f,320,320);if(p&&d){p.img=d;saveP();render()}}};
+$("pav").onclick=()=>pickImg("avatar");$("pbp").onclick=()=>pickImg("banner");$("pclr").onclick=()=>{delete P.avatar;delete P.banner;applyP()};
+let PLs=[];try{PLs=JSON.parse(localStorage.getItem("spl")||"[]")}catch(e){}
+const saveP=()=>{try{localStorage.setItem("spl",JSON.stringify(PLs))}catch(e){}};
+const plG=p=>p.img?`url(${p.img}) center/cover`:grad(p.name+p.id);
+function drawPl(){$("mypl").innerHTML=PLs.map(p=>`<button class="pl" data-pl="${p.id}"><span class="c" style="--g:${plG(p)}"></span><span><b>${esc(p.name)}</b><small>Playlist · ${p.ids.filter(i=>idx(i)>=0).length} titre(s)</small></span></button>`).join("")||"<p style='padding:0 10px 6px;color:var(--mute);font-size:14px'>Crée ta première playlist</p>"}
+const _r=render;
+function plView(){const p=PLs.find(x=>x.id===view.slice(2));if(!p){view="home";return _r()}
+const ts=p.ids.map(i=>T.find(t=>t.id===i)).filter(Boolean);
+$("view").innerHTML=`<div class="phero"><div class="c" style="--g:${plG(p)}"></div><div style="flex:1;min-width:220px"><small style="color:var(--mute)">Playlist</small><input type="text" id="pln" value="${esc(p.name)}" maxlength="40" aria-label="Nom de la playlist"><div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap"><button class="btn" id="plplay">▶ Lire</button><button class="sm" id="plimg">Changer l’image</button><button class="sm" id="pldel">Supprimer la playlist</button></div></div></div><div class="addbox"><button class="btn" id="plsearch">＋ Rechercher des musiques</button></div><div id="pladdmsg" style="color:var(--mute);font-size:14px;margin-bottom:8px;min-height:20px">${(()=>{const m=plMsg;plMsg="";return esc(m)})()}</div><div id="plsug"></div>`+(ts.length?ts.map((t,n)=>row(t,n+1).replace('data-del="','data-rm="'+p.id+'|').replace(/aria-label="Supprimer /,'aria-label="Retirer de la playlist : ').replace('Supprimer de la bibliothèque','Retirer de la playlist')).join(""):"<p style='color:var(--mute)'>Cette playlist est vide. Clique sur « Rechercher des musiques » pour en ajouter.</p>");
+list=ts.map(t=>t.id)}
+render=function(){if(view.startsWith("p:"))plView();else _r();drawPl()};
+document.addEventListener("input",e=>{if(e.target.id==="pln"){const p=PLs.find(x=>x.id===view.slice(2));if(p){p.name=e.target.value||"Playlist";saveP();drawPl()}}});
+function showT(){const t=T.find(x=>x.id===tId);if(!t)return;$("tcov").style.setProperty("--g",tImg===undefined?gOf(t):tImg?`url(${tImg}) center/cover`:grad(t.title+t.artist))}
+function openT(id){const t=T.find(x=>x.id===id);if(!t)return;tId=id;tImg=undefined;$("tt").value=t.title;$("ta").value=t.artist;showT();
+$("tpls").innerHTML=PLs.map(p=>`<label class="chk"><input type="checkbox" data-tp="${p.id}" ${p.ids.includes(id)?"checked":""}> ${esc(p.name)}</label>`).join("")||"<small style='color:var(--mute)'>Aucune playlist pour l’instant : crée-en une depuis l’accueil ou la barre latérale.</small>";$("tm").hidden=false;$("tt").focus()}
+$("tpick").onclick=()=>pickImg("track");$("tnoimg").onclick=()=>{tImg=null;showT()};
+/* la fiche se ferme seulement avec Accepter, Passer ou Annuler */
+$("tsave").onclick=async()=>{const t=T.find(x=>x.id===tId);if(!t)return;t.title=$("tt").value.trim()||t.title;t.artist=$("ta").value.trim()||"Artiste inconnu";if(tImg!==undefined){if(tImg)t.img=tImg;else delete t.img}
+document.querySelectorAll("[data-tp]").forEach(c=>{const p=PLs.find(x=>x.id===c.dataset.tp);if(!p)return;p.ids=p.ids.filter(i=>i!==tId);if(c.checked)p.ids.push(tId)});saveP();
+await store("readwrite",o=>o.put(t));if(cur>=0&&T[cur].id===tId)info();$("tm").hidden=true;render()};
+/* fiche d’information à l’import */
+let upQ=[],upTot=0,upDone=0;
+function startUp(){upQ=upNew;upNew=[];upTot=upQ.length;upDone=0;if(upQ.length)nextUp()}
+function nextUp(){const id=upQ.shift();upDone++;openT(id);$("th").textContent="Nouveau titre ajouté";const c=$("tcount");c.hidden=upTot<2;c.textContent=`Titre ${upDone} sur ${upTot} · complète les infos puis clique sur Accepter`;const t=T.find(x=>x.id===id);if(t&&t.artist==="Artiste inconnu")$("ta").select()}
+function hideBatch(){upQ=[];$("tcount").hidden=true;$("th").textContent="Modifier le titre"}
+const _ts=$("tsave").onclick;$("tsave").onclick=async()=>{await _ts();if(upQ.length)nextUp();else hideBatch()};
+
+$("tcancel").onclick=()=>{$("tm").hidden=true;hideBatch()};
+const _o=openP;openP=function(){const b=$("pdel");delete b.dataset.sure;b.textContent="Supprimer toute ma musique";_o()};$("me").onclick=openP;
+$("pn").oninput=()=>{P.name=$("pn").value||"Moi";applyP()};
+addEventListener("pagehide",()=>{try{localStorage.setItem("sp",JSON.stringify(P));localStorage.setItem("spl",JSON.stringify(PLs))}catch(e){}});
+/* validation d’une image : il faut cliquer sur Accepter */
+let cRes=null;
+function askImg(d){return new Promise(r=>{cRes=r;$("cprev").style.background=`url(${d}) center/contain no-repeat var(--panel2)`;$("cm").hidden=false;$("cok").focus()})}
+$("cok").onclick=()=>{$("cm").hidden=true;if(cRes)cRes(true);cRes=null};
+$("cno").onclick=()=>{$("cm").hidden=true;if(cRes)cRes(false);cRes=null};
+/* ajouter des musiques à une playlist */
+let plMsg="";
+function plFind(q){const p=PLs.find(x=>x.id===view.slice(2));if(!p)return[];q=q.trim().toLowerCase();if(!q)return[];
+return T.filter(t=>!p.ids.includes(t.id)&&(t.title+" "+t.artist).toLowerCase().includes(q)).sort((a,b)=>((b.title.toLowerCase()===q)-(a.title.toLowerCase()===q))||((b.title.toLowerCase().startsWith(q))-(a.title.toLowerCase().startsWith(q))))}
+function plAdd(id){const p=PLs.find(x=>x.id===view.slice(2)),t=T.find(x=>x.id===id);if(!p||!t)return;p.ids.push(id);saveP();plMsg=`« ${t.title} » ajoutée à la playlist.`;render();const i=$("pladd");if(i)i.focus()}
+function plSug(){const box=$("plsug");if(!box)return;box.innerHTML=plFind($("pladd").value).slice(0,5).map(t=>`<div class="row" style="grid-template-columns:1fr auto"><span class="t"><span class="c" ${cov(t)}></span><span><b>${esc(t.title)}</b><br><small>${esc(t.artist)}</small></span></span><button class="sm" data-pa="${t.id}">Ajouter</button></div>`).join("")}
+document.addEventListener("input",e=>{if(e.target.id==="pladd")plSug()});
+document.addEventListener("click",e=>{const a=e.target.closest("[data-pa]");if(a){plAdd(a.dataset.pa);return}
+if(e.target.closest("#pladdbtn")){const q=$("pladd").value.trim(),r=plFind(q),m=$("pladdmsg");if(!q)m.textContent="Écris d’abord le nom d’une musique.";else if(!r.length)m.textContent=`Aucune musique « ${q} » trouvée dans ta bibliothèque (ou elle est déjà dans la playlist).`;else plAdd(r[0].id)}});
+document.addEventListener("keydown",e=>{if(e.key==="Enter"&&e.target.id==="pladd"){e.preventDefault();$("pladdbtn").click()}});
+/* lecture en plein écran */
+document.body.insertAdjacentHTML("beforeend",`<div id="fs" hidden role="dialog" aria-label="Lecture en cours"><div class="bg"></div><button id="fsback" aria-label="Quitter la lecture en plein écran" title="Retour">←</button><div class="tb"><button id="fsed">✎ Modifier l’image</button><button id="fsx" aria-label="Réduire">Réduire ⌵</button></div><div class="c" id="fsc"></div><h2 id="fst"></h2><p id="fsa"></p></div>`);
+function fsColor(t){const set=c=>$("fs").style.setProperty("--fc",c);
+if(!t.img){let h=0;for(const ch of t.title+t.artist)h=(h*31+ch.charCodeAt(0))%360;set(`hsl(${h} 55% 30%)`);return}
+const i=new Image();i.onload=()=>{try{const c=document.createElement("canvas");c.width=c.height=8;const x=c.getContext("2d");x.drawImage(i,0,0,8,8);const d=x.getImageData(0,0,8,8).data;let r=0,g=0,b=0;for(let k=0;k<d.length;k+=4){r+=d[k];g+=d[k+1];b+=d[k+2]}const n=d.length/4;set(`rgb(${r/n*.6|0},${g/n*.6|0},${b/n*.6|0})`)}catch(e){}};i.src=t.img}
+function fsUpdate(){if($("fs").hidden||cur<0)return;const t=T[cur];$("fsc").style.setProperty("--g",gOf(t));$("fst").textContent=t.title;$("fsa").textContent=t.artist;fsColor(t)}
+function fsPos(){$("fs").style.bottom=document.querySelector("footer").offsetHeight+16+"px"}
+function fsOpen(){if(cur<0)return;$("fs").hidden=false;fsPos();fsUpdate()}
+function fsClose(){$("fs").hidden=true}
+const _i=info;info=function(){_i();fsUpdate()};
+const _u=ui;ui=function(){_u();if(cur<0)fsClose()};
+["npc","npt","npa"].forEach(id=>{$(id).style.cursor="pointer";$(id).onclick=fsOpen});
+document.querySelector(".vol").insertAdjacentHTML("beforeend",`<button id="fsb" aria-label="Plein écran" title="Plein écran" style="font-size:18px;color:var(--mute)">⛶</button>`);
+$("fsb").onclick=()=>$("fs").hidden?fsOpen():fsClose();
+$("fsx").onclick=fsClose;$("fsback").onclick=fsClose;$("fsed").onclick=()=>{if(cur>=0)openT(T[cur].id)};
+addEventListener("resize",()=>{if(!$("fs").hidden)fsPos()});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("fs").hidden&&$("tm").hidden&&$("pm").hidden&&$("cm").hidden)fsClose()});
+/* page « Ajouter des musiques » */
+document.body.insertAdjacentHTML("beforeend",`<div id="ap" hidden role="dialog" aria-label="Ajouter des musiques"><div class="top2"><button id="apback" aria-label="Retour" title="Retour">←</button><h2 style="margin:0">Ajouter des musiques</h2></div><p class="apm" style="margin:0 0 0 56px">Importe tes fichiers audio ou range des titres de ta bibliothèque dans une playlist.</p><div class="apbar"><input type="search" id="aq" placeholder="Écris le nom d’une musique ou d’un artiste" aria-label="Rechercher une musique" autocomplete="off"><button class="btn" id="apimp">Importer des fichiers</button></div><div class="apbar" style="margin-top:0"><select id="apsel" aria-label="Playlist de destination"></select></div><div class="apm" id="apmsg"></div><div id="apres"></div><h2>Recommandés pour toi</h2><div class="apm" style="margin-top:-8px">D’après tes likes et les titres que tu n’as pas encore rangés dans une playlist.</div><div id="aprec" class="grid"></div></div>`);
+function apPos(){$("ap").style.bottom=document.querySelector("footer").offsetHeight+16+"px"}
+function inPl(id,pid){const p=PLs.find(x=>x.id===pid);return !!p&&p.ids.includes(id)}
+function apOpts(){const s=$("apsel"),v=s.value;s.innerHTML=`<option value="">Ajouter à… (choisis une playlist)</option>`+PLs.map(p=>`<option value="${p.id}">${esc(p.name)}</option>`).join("")+`<option value="__new">＋ Nouvelle playlist</option>`;s.value=PLs.some(p=>p.id===v)?v:""}
+function apDone(t){const pid=$("apsel").value;return !!pid&&pid!=="__new"&&inPl(t.id,pid)}
+function apRow(t){const d=apDone(t);return `<div class="row" style="grid-template-columns:1fr auto"><span class="t"><span class="c" ${cov(t)}></span><span><b>${esc(t.title)}</b><br><small>${esc(t.artist)}</small></span></span><button class="sm" data-aa="${t.id}" ${d?"disabled":""}>${d?"Ajoutée ✓":"＋ Ajouter"}</button></div>`}
+function apCard(t){return `<div class="card"><div class="c" ${cov(t)}></div><b>${esc(t.title)}</b><span>${esc(t.artist)}</span><br><button class="sm" data-aa="${t.id}">＋ Ajouter</button></div>`}
+function apRec(){const pid=$("apsel").value,real=pid&&pid!=="__new"?pid:"";const la=new Set(T.filter(t=>liked.has(t.id)).map(t=>t.artist)),any=new Set(PLs.flatMap(p=>p.ids));
+return T.filter(t=>!(real&&inPl(t.id,real))).map(t=>({t,s:(la.has(t.artist)?3:0)+(liked.has(t.id)?1:0)+(any.has(t.id)?0:2)+T.indexOf(t)/Math.max(T.length,1)})).sort((a,b)=>b.s-a.s).slice(0,8).map(x=>x.t)}
+function apRender(){const raw=$("aq").value.trim(),q=raw.toLowerCase();
+if(!q)$("apres").innerHTML="";else{const r=T.filter(t=>(t.title+" "+t.artist).toLowerCase().includes(q)).slice(0,10);$("apres").innerHTML=r.length?r.map(apRow).join(""):`<p class="apm">Aucune musique « ${esc(raw)} » dans ta bibliothèque. Utilise « Importer des fichiers » pour l’ajouter.</p>`}
+$("aprec").innerHTML=T.length?apRec().map(apCard).join(""):"<p class='apm'>Importe tes premières musiques pour recevoir des recommandations.</p>"}
+function openAp(){fsClose();apOpts();$("ap").hidden=false;$("apmsg").textContent="";apPos();apRender();$("aq").focus()}
+function closeAp(){$("ap").hidden=true;render()}
+$("addpg").onclick=openAp;$("apback").onclick=closeAp;$("apimp").onclick=()=>$("file").click();$("aq").oninput=apRender;
+$("apsel").onchange=()=>{if($("apsel").value==="__new"){const p={id:"p"+Date.now(),name:"Ma playlist n°"+(PLs.length+1),ids:[]};PLs.push(p);saveP();drawPl();apOpts();$("apsel").value=p.id;$("apmsg").textContent=`Playlist « ${p.name} » créée.`}apRender()};
+document.addEventListener("click",e=>{const a=e.target.closest("[data-aa]");if(!a)return;const pid=$("apsel").value;if(!pid||pid==="__new"){$("apmsg").textContent="Choisis d’abord une playlist dans la liste.";return}
+const p=PLs.find(x=>x.id===pid),t=T.find(x=>x.id===a.dataset.aa);if(p&&t&&!p.ids.includes(t.id)){p.ids.push(t.id);saveP();drawPl();$("apmsg").textContent=`« ${t.title} » ajoutée à « ${p.name} ».`;apRender()}});
+const _r2=render;render=function(){_r2();if(!$("ap").hidden)apRender()};
+addEventListener("resize",()=>{if(!$("ap").hidden)apPos()});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("ap").hidden&&$("tm").hidden&&$("pm").hidden&&$("cm").hidden)closeAp()});
+document.addEventListener("click",e=>{if(!e.target.closest("#plsearch"))return;const pid=view.slice(2);openAp();if(PLs.some(p=>p.id===pid)){$("apsel").value=pid;apRender()}});
+applyP();
+load();
+</script>
+</body>
+</html>
