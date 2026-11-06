@@ -385,7 +385,9 @@ addEventListener("resize",()=>{if(!$("ap").hidden)apPos()});
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("ap").hidden&&$("tm").hidden&&$("pm").hidden&&$("cm").hidden)closeAp()});
 document.addEventListener("click",e=>{if(!e.target.closest("#plsearch"))return;const pid=view.slice(2);openAp();if(PLs.some(p=>p.id===pid)){$("apsel").value=pid;apRender()}});
 applyP();
-load();
+window.__mowgliLocal=()=>({T,PLs,liked,store,saveP,saveL,render});
+window.__mowgliReady=load();
 </script>
+<script type="module" src="./cloud.js"></script>
 </body>
 </html>
