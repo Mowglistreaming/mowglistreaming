@@ -6,7 +6,7 @@ const bucket = supabase.storage.from("mowgli-audio");
 let currentUser = null;
 const header = document.querySelector("header");
 header.insertAdjacentHTML("beforeend", '<button class="chip" id="mowgli-cloud-open">☁ Synchronisation</button>');
-document.body.insertAdjacentHTML("beforeend", '<div class="modal" id="mowgli-cloud-modal" hidden><div class="box" role="dialog" aria-label="Synchronisation cloud"><h3>Ma musique dans le cloud</h3><p class="keys">Connecte-toi avec un code envoyé à ton adresse e-mail. Tes fichiers restent privés à ton compte. Le forfait gratuit limite chaque fichier à 50 Mo.</p><label>Adresse e-mail<input type="email" id="mowgli-cloud-email" autocomplete="email" placeholder="toi@exemple.fr"></label><div style="display:flex;gap:8px"><button class="sm" id="mowgli-cloud-send">Envoyer un code</button><input type="text" id="mowgli-cloud-otp" inputmode="numeric" autocomplete="one-time-code" placeholder="Code reçu par e-mail" style="flex:1;min-width:0;background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:10px 12px;color:var(--text);font:inherit"></div><div style="display:flex;gap:8px"><button class="btn" id="mowgli-cloud-verify" style="flex:1">Vérifier le code</button><button class="sm" id="mowgli-cloud-sync" disabled>Synchroniser</button></div><div id="mowgli-cloud-status" class="keys" role="status" aria-live="polite"></div><div class="acts"><button class="sm" id="mowgli-cloud-signout" hidden>Déconnexion</button><button class="sm" id="mowgli-cloud-close">Fermer</button></div></div></div>');
+document.body.insertAdjacentHTML("beforeend", '<div class="modal" id="mowgli-cloud-modal" hidden><div class="box" role="dialog" aria-label="Synchronisation cloud"><h3>Ma musique dans le cloud</h3><p class="keys">Connecte-toi avec un code envoyé à ton adresse e-mail. Les titres publiés sont visibles et écoutables par tous. Seuls les comptes connectés peuvent publier. Le forfait gratuit limite chaque fichier à 50 Mo.</p><label>Adresse e-mail<input type="email" id="mowgli-cloud-email" autocomplete="email" placeholder="toi@exemple.fr"></label><div style="display:flex;gap:8px"><button class="sm" id="mowgli-cloud-send">Envoyer un code</button><input type="text" id="mowgli-cloud-otp" inputmode="numeric" autocomplete="one-time-code" placeholder="Code reçu par e-mail" style="flex:1;min-width:0;background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:10px 12px;color:var(--text);font:inherit"></div><div style="display:flex;gap:8px"><button class="btn" id="mowgli-cloud-verify" style="flex:1">Vérifier le code</button><button class="sm" id="mowgli-cloud-sync" disabled>Synchroniser</button></div><div id="mowgli-cloud-status" class="keys" role="status" aria-live="polite"></div><div class="acts"><button class="sm" id="mowgli-cloud-signout" hidden>Déconnexion</button><button class="sm" id="mowgli-cloud-close">Fermer</button></div></div></div>');
 const modal = document.getElementById("mowgli-cloud-modal");
 const status = document.getElementById("mowgli-cloud-status");
 const setStatus = (message) => { status.textContent = message; };
@@ -71,6 +71,7 @@ async function syncLibrary() {
   }
   const cloudIds = new Set((remoteTracks || []).map((row) => row.id));
   for (const track of state.T) {
+    if (track.publicShared) continue;
     if (!track.blob) continue;
     if (track.blob.size > 52428800) throw new Error("Le fichier « " + track.title + " » dépasse la limite gratuite de 50 Mo.");
     const cloudId = track.cloud_id || crypto.randomUUID();
@@ -82,7 +83,7 @@ async function syncLibrary() {
       const { error: uploadError } = await bucket.upload(path, track.blob, { upsert: true, contentType: mime });
       if (uploadError) throw uploadError;
     }
-    const { error: saveError } = await supabase.from("tracks").upsert({ id: cloudId, title: track.title, artist: track.artist || "Inconnu", album: null, audio_url: path, cover_url: track.img || null, duration_seconds: Math.round(track.d || 0), is_public: false, created_by: userId }, { onConflict: "id" });
+    const { error: saveError } = await supabase.from("tracks").upsert({ id: cloudId, title: track.title, artist: track.artist || "Inconnu", album: null, audio_url: path, cover_url: track.img || null, duration_seconds: Math.round(track.d || 0), is_public: true, created_by: userId }, { onConflict: "id" });
     if (saveError) throw saveError;
     await state.store("readwrite", (store) => store.put(track));
   }
@@ -131,6 +132,7 @@ async function syncLibrary() {
   state.saveP();
   state.saveL();
   state.render();
+  window.dispatchEvent(new CustomEvent("mowgli:shared-updated"));
   setStatus("Synchronisation terminée : " + state.T.length + " morceau(x), " + state.PLs.length + " playlist(s). " + added + " élément(s) récupéré(s) du cloud.");
 }
 document.getElementById("mowgli-cloud-sync").onclick = async () => {
